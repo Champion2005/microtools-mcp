@@ -11,6 +11,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@faker-js/faker": "^10.4.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "cron-parser": "^5.5.0",
     "cronstrue": "^3.14.0",
@@ -23,6 +24,8 @@
     "papaparse": "^5.5.3",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
-    "sharp": "^0.34.5"
+    "quicktype-core": "^23.2.6",
+    "sharp": "^0.34.5",
+    "svgo": "^4.0.1"
   }
 }

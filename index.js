@@ -315,6 +315,76 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
       }
 
+      case "type_generator": {
+        try {
+          JSON.parse(args.jsonString);
+          const lang = args.language || 'typescript';
+          const jsonInputForTarget = await jsonInputForTargetLanguage(lang);
+          await jsonInputForTarget.addSource({
+            name: args.rootName || 'Root',
+            samples: [args.jsonString]
+          });
+          const inputData = new InputData();
+          inputData.addInput(jsonInputForTarget);
+          const result = await quicktype({
+            inputData,
+            lang,
+            rendererOptions: { 'just-types': 'true', 'acronym-style': 'original' }
+          });
+          return { content: [{ type: "text", text: result.lines.join('\n') }] };
+        } catch (err) {
+          return { content: [{ type: "text", text: `Type generation failed: ${err.message}` }] };
+        }
+      }
+
+      case "svg_optimizer": {
+        try {
+          const result = optimize(args.svgString, {
+            multipass: true,
+            plugins: [
+              { name: 'preset-default', params: { overrides: { removeViewBox: false } } },
+              'removeDimensions',
+              'sortAttrs',
+            ],
+          });
+          if (result.error) throw new Error(result.error);
+          return { content: [{ type: "text", text: result.data }] };
+        } catch (err) {
+          return { content: [{ type: "text", text: `SVG optimization failed: ${err.message}` }] };
+        }
+      }
+
+      case "mock_data_generator": {
+        try {
+          const count = Math.min(args.rowCount || 10, 1000);
+          faker.seed();
+          const data = [];
+          for (let i = 0; i < count; i++) {
+            const row = {};
+            args.schema.forEach(field => {
+              switch(field.type) {
+                case 'uuid': row[field.name] = faker.string.uuid(); break;
+                case 'fullName': row[field.name] = faker.person.fullName(); break;
+                case 'email': row[field.name] = faker.internet.email(); break;
+                case 'phone': row[field.name] = faker.phone.number(); break;
+                case 'jobTitle': row[field.name] = faker.person.jobTitle(); break;
+                case 'company': row[field.name] = faker.company.name(); break;
+                case 'avatar': row[field.name] = faker.image.avatar(); break;
+                case 'date': row[field.name] = faker.date.past().toISOString(); break;
+                case 'paragraph': row[field.name] = faker.lorem.paragraph(); break;
+                case 'boolean': row[field.name] = faker.datatype.boolean(); break;
+                case 'number': row[field.name] = faker.number.int({ min: 1, max: 1000 }); break;
+                default: row[field.name] = faker.word.sample();
+              }
+            });
+            data.push(row);
+          }
+          return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+        } catch (err) {
+          return { content: [{ type: "text", text: `Mock data generation failed: ${err.message}` }] };
+        }
+      }
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
