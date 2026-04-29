@@ -140,6 +140,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ["markdown"]
         }
+      },
+      {
+        name: "jwt_inspector",
+        description: "Decode and inspect JSON Web Tokens (JWT). Returns the header and payload.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            token: { type: "string", description: "The raw JWT string to decode" }
+          },
+          required: ["token"]
+        }
+      },
+      {
+        name: "cron_translator",
+        description: "Convert a cron schedule expression into plain English and calculate the next execution times.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            cronExpression: { type: "string", description: "The cron expression (e.g. '0 4 8-14 * *')" }
+          },
+          required: ["cronExpression"]
+        }
       }
     ]
   };
@@ -267,6 +289,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const rawHtml = md.render(args.markdown);
         const cleanHtml = DOMPurify.sanitize(rawHtml);
         return { content: [{ type: "text", text: cleanHtml }] };
+      }
+
+      case "jwt_inspector": {
+        try {
+          const header = jwtDecode(args.token, { header: true });
+          const payload = jwtDecode(args.token);
+          return { content: [{ type: "text", text: JSON.stringify({ header, payload }, null, 2) }] };
+        } catch (err) {
+          return { content: [{ type: "text", text: `Invalid JWT: ${err.message}` }] };
+        }
+      }
+
+      case "cron_translator": {
+        try {
+          const translation = cronstrue.toString(args.cronExpression, { throwExceptionOnParseError: true });
+          const interval = parser.parseExpression(args.cronExpression);
+          const upcoming = [];
+          for (let i = 0; i < 5; i++) {
+            upcoming.push(interval.next().toDate().toISOString());
+          }
+          return { content: [{ type: "text", text: JSON.stringify({ translation, upcoming }, null, 2) }] };
+        } catch (err) {
+          return { content: [{ type: "text", text: `Invalid cron expression: ${err.message}` }] };
+        }
       }
 
       default:
