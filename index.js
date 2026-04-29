@@ -14,6 +14,12 @@ import Papa from 'papaparse';
 import MarkdownIt from 'markdown-it';
 import createDOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom';
+import { jwtDecode } from 'jwt-decode';
+import cronstrue from 'cronstrue';
+import { parseExpression } from 'cron-parser';
+import { quicktype, InputData, jsonInputForTargetLanguage } from 'quicktype-core';
+import { optimize } from 'svgo';
+import { faker } from '@faker-js/faker';
 
 const { capitalize } = lodash;
 
