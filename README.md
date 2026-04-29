@@ -12,6 +12,11 @@ The tools are processed entirely locally via standard Node.js libraries (such as
 - `pdf_merge` - Combine multiple PDF files
 - `csv_to_json` - Convert CSV strings to formatted JSON
 - `markdown_preview` - Render markdown to sanitized HTML
+- `cron_translator` - Convert cron expressions to English and calculate next runs
+- `type_generator` - Convert raw JSON into strict types (TypeScript, Go, Rust, Python)
+- `svg_optimizer` - Clean, minify, and strip metadata from bloated SVG files
+- `mock_data_generator` - Generate realistic mock data objects based on a schema
+- `hash_generator` - Compute secure hashes (MD5, SHA, Bcrypt) and tokens
 
 ## Requirements
 - Node.js 18+

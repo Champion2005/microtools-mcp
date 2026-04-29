@@ -297,13 +297,31 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return { content: [{ type: "text", text: cleanHtml }] };
       }
 
-      case "jwt_inspector": {
+      case "hash_generator": {
         try {
-          const header = jwtDecode(args.token, { header: true });
-          const payload = jwtDecode(args.token);
-          return { content: [{ type: "text", text: JSON.stringify({ header, payload }, null, 2) }] };
+          const input = args.inputString || '';
+          const md5 = CryptoJS.MD5(input).toString();
+          const sha1 = CryptoJS.SHA1(input).toString();
+          const sha256 = CryptoJS.SHA256(input).toString();
+          const sha512 = CryptoJS.SHA512(input).toString();
+          const bcryptHash = await bcrypt.hash(input, 8);
+          
+          const result = {
+            hashes: { md5, sha1, sha256, sha512, bcrypt: bcryptHash }
+          };
+
+          if (args.generateTokens) {
+            const randomWords = CryptoJS.lib.WordArray.random(32);
+            result.tokens = {
+              uuid: uuidv4(),
+              hex32: randomWords.toString(CryptoJS.enc.Hex),
+              base64: randomWords.toString(CryptoJS.enc.Base64)
+            };
+          }
+
+          return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
         } catch (err) {
-          return { content: [{ type: "text", text: `Invalid JWT: ${err.message}` }] };
+          return { content: [{ type: "text", text: `Hashing failed: ${err.message}` }] };
         }
       }
 
